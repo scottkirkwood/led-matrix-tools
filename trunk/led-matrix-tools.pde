@@ -9,10 +9,10 @@ Belo Horizonte, Brazil
 int CS1 = 2; // Chip select
 int CLK = 3; // set clock pin
 int MOSI = 4; // set master out, slave in
-byte OFF = B00; // command byte to write to pots 0 and 1, from the MCP42XXX datasheet
-byte RED = B01; // command byte to write to pot 0, from the MCP42XXX datasheet
-byte GRE = B10; // command byte to write to pot 1, from the MCP42XXX datasheet
-byte ORA = B11; // BOTH
+byte OFF = B00; // command byte LED off
+byte RED = B01; // command byte LED red on
+byte GRE = B10; // command byte LED green on
+byte ORA = B11; // BOTH red and green, orage.
 int index = 0;
 
 byte message[64] = {
