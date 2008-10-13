@@ -50,6 +50,8 @@ if __name__ == "__main__":
       help='Use bold version')
   parse.add_option('-i', '--italics', dest='italics', action='store_true',
       help='Use italics version')
+  parse.add_option('-f', '--font', dest='font', default='verdana',
+      help='Font to use')
   options, args = parse.parse_args()
   app = wx.PySimpleApp()
   size = (options.fsize + 5, options.fsize + 5)
@@ -61,6 +63,7 @@ if __name__ == "__main__":
     style = wx.ITALIC
   font = wx.FontFromPixelSize(size, wx.SWISS, style=style, weight=weight)
   for arg in args:
+    exec 'arg = u\'%s\'' % arg
     lines = GetFontPixels(font, arg, '#', ' ')
     for i, line in enumerate(lines):
       #sys.stdout.write('%02d: ' % (i + 1))
