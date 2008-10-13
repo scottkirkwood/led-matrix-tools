@@ -3,58 +3,19 @@ import serial
 import time
 import text2pixels
 
-
-special = {
-  'smile' : [
-     '  GGGG  ',
-     ' G    G ',
-     'G G  G G',
-     'G      G',
-     'G G  G G',
-     'G  GG  G',
-     ' G    G ',
-     '  GGGG  ', 
-  ],
-  'smilie' : [
-     ' GG  GG ',
-     ' GG  GG ',
-     '        ',
-     '   GG   ',
-     'G  GG  G',
-     'GG    GG',
-     'GGGGGGGG',
-     '  GGGG  ', 
-  ],
-  'frownie' : [
-     ' RR  RR ',
-     ' RR  RR ',
-     '        ',
-     '   RR   ',
-     '        ',
-     ' RRRRRR ',
-     'RRRRRRRR',
-     'R      R', 
-  ],
-  'sad' : [
-     '  RRRR  ',
-     ' R    R ',
-     'R R  R R',
-     'R      R',
-     'R  RR  R',
-     'R R  R R',
-     ' R    R ',
-     '  RRRR  ', 
-  ]
-}
+special = {}
+execfile('special.py')
 
 def ScrollingInfo(lines, speed=0.1, leadin=0, leadout=0):
-  """Except 8 lines."""
+  """Must be 8 lines."""
+  ser.write('\r') # Reset
   width = len(lines[0])
   if leadin > 8:
     leadin = 8
   for x in range(leadin):
     for row in lines:
       ser.write(' ' * (8 - x) + row[:x])
+    ser.write('\n')
     ser.flush()
     time.sleep(speed)
   for x in range(width - 8 + leadout):
@@ -72,16 +33,26 @@ def MovingText(text, color, times=1):
   for x in range(times):
     ScrollingInfo(lines, speed=0.1, leadin=0, leadout=0)
 
+def MovingText2(text, color):
+  ser.write('\r')
+  lines = text2pixels.Get8PixelsHigh(text, color)
+  for line in lines:
+    ser.write(line)
+    ser.write('\n')
 
 def OneColor(color):
-  ser.write('\n')
-  ser.write(color * 64)
+  ser.write('\r')
+  for row in range(8):
+    ser.write(color * 8)
+    ser.write('\n')
   ser.flush()
 
 
 def SetImage(image):
+  ser.write('\r') # Reset
   for row in special[image]:
     ser.write(row)
+    ser.write('\n')
   ser.flush()
 
 
@@ -108,7 +79,11 @@ def WarmUp():
 
 if __name__ == '__main__':
   import optparse
-  parse = optparse.OptionParser()
+  desc = ('For text you can pass some words to show.  '
+    'If it\'s one of the following, however it will show something '
+    'special:\n%s') % '\n'.join(['  %r: %s' % (k, v[0]) for k, v, in special.items()])
+
+  parse = optparse.OptionParser('%prog [options] text\n' + desc)
   parse.add_option('-g', '--green', dest='green', action='store_true',
       help='Show text in green')
   parse.add_option('-r', '--red', dest='red', action='store_true',
@@ -117,6 +92,7 @@ if __name__ == '__main__':
       help='Show text in orange')
   parse.add_option('-t', '--times', dest='times', type='int',
       help='Number of times to scroll text', default=100)
+
   options, args = parse.parse_args()
 
   app = text2pixels.Init()
@@ -130,5 +106,6 @@ if __name__ == '__main__':
       ch = 'R'
     elif options.orange:
       ch = 'O'
-    MovingText(' '.join(args), ch, options.times)
+    print ' '.join(args)
+    MovingText2(' '.join(args), ch)
   ser.close()
