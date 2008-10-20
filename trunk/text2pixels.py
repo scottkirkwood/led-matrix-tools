@@ -17,6 +17,63 @@ def Init():
   """
   return wx.PySimpleApp()
 
+def Trim(lines, white):
+  # Strip trailing blank lines
+  left = right = 99
+  top = bottom = 0
+  inTop = True
+  for line in lines:
+    width = len(line)
+    if inTop:
+      if line.strip(white):
+        inTop = False
+      else:
+        top += 1
+    if line.strip(white):
+      bottom = 0
+    else:
+      bottom += 1
+    cur_left = width - len(line.lstrip(white))
+    if cur_left < left:
+      left = cur_left
+    cur_right = width - len(line.rstrip(white))
+    if cur_right < right:
+      right = cur_right
+  ret = []
+  for line in lines[top:len(lines)-bottom]:
+    ret.append(line[left:len(line)-right])
+  return ret
+
+
+def FitSize(width, height, lines, white):
+  """Make it fit a certain size."""
+  if len(lines) > height:
+    lines = lines[:height]
+  elif len(lines) < height:
+    diff = height - len(lines)
+    top = diff // 2
+    bottom = diff - top
+    for unused_i in range(top):
+      lines.insert(0, white * width)
+    for unused_i in range(bottom):
+      lines.append(white * width)
+  ret = []
+  for line in lines:
+    curw = len(line)
+    if curw > width:
+      line = line[:width]
+    elif curw < width:
+      diff = width - len(line)
+      left = diff // 2
+      right = diff - left
+      for unused_i in range(left):
+        line.insert(0, white)
+      for unused_i in range(right):
+        line += white
+    ret.append(line)
+
+  return ret
+
 
 def GetFontPixels(font, text, black, white):
   """Draw the text and get the pixels."""
@@ -43,18 +100,14 @@ def GetFontPixels(font, text, black, white):
   # Clear the memory
   dc.SelectObject(wx.NullBitmap)
 
-  # Strip trailing blank lines
-  while True:
-    if ret[-1].strip(white):
-      break
-    ret = ret[:-1]
-  return ret
+  return Trim(ret, white)
 
 
 def Get8PixelsHigh(text, color):
   """Useful for my 8x8 pixel LED matrix from sparkfun."""
   font = wx.Font(8, wx.SWISS, style=wx.NORMAL, weight=wx.BOLD)
-  lines = GetFontPixels(font, text, color, ' ')
+  white = ' '
+  lines = FitSize(8, 8, GetFontPixels(font, text, color, white), white)
   return lines
 
 
@@ -134,6 +187,8 @@ if __name__ == '__main__':
   parse.add_option('-p', '--python', dest='python', action='store_true',
                    default=False,
                    help='Output as lines of python')
+  parse.add_option('-m', '--matrix', dest='matrix', action='store_true',
+                   help='Emulate the 8x8 matrix')
   parse.add_option('--kingwen', dest='kingwen', action='store_true',
                    default=False, help='Output King Wen sequence')
   options, args = parse.parse_args()
@@ -157,9 +212,12 @@ if __name__ == '__main__':
 
   for arg in args:
     exec 'arg = u\'%s\'' % arg
-    lines = GetFontPixels(afont, arg, options.char, ' ')
+    if options.matrix:
+      lines = Get8PixelsHigh(arg, 'R')
+    else:
+      lines = GetFontPixels(afont, arg, options.char, ' ')
     if options.grid:
-      line = '   '
+      line = '    '
       for col in range(len(lines[0])):
         line += '%d' % ((col + 1) % 10)
       print line
@@ -172,4 +230,6 @@ if __name__ == '__main__':
       sys.stdout.write(''.join(line))
       if options.python:
         sys.stdout.write('\',')
-      sys.stdout.write('\n')
+      # Print a blank between lines, but not on last line
+      if i + 1 != len(lines):
+        sys.stdout.write('\n')
