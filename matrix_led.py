@@ -1,10 +1,20 @@
 #!/usr/bin/env python
-import serial
+
+"""Send something for the SparkFun LED matrix to display.
+
+Code to send something to the LED matrix.
+It can handle both 8x8 images or scrolling images.
+Scrolling text also accepted and is handled with text2pixels.
+"""
+import optparse
+import sys
 import time
+import serial
 import text2pixels
 
 special = {}
 execfile('special.py')
+
 
 def ScrollingInfo(lines, speed=0.1, leadin=0, leadout=0):
   """Scrolls the text using python.
@@ -13,9 +23,9 @@ def ScrollingInfo(lines, speed=0.1, leadin=0, leadout=0):
     lines: Must be exactly 8 lines.
     speed: How much of a delay between frames.
     leadin: how many blank pixels on the LHS to lead-in to.
-    loeadout: how many blank pixels at the end of the image.
+    leadout: how many blank pixels at the end of the image.
   """
-  ser.write('\r') # Reset
+  ser.write('\r')  # Reset
   width = len(lines[0])
   if leadin > 8:
     leadin = 8
@@ -38,7 +48,7 @@ def ScrollingInfo(lines, speed=0.1, leadin=0, leadout=0):
 def MovingText(text, color, times=1):
   """Scroll the text."""
   lines = text2pixels.Get8PixelsHigh(text, color)
-  for x in range(times):
+  for unused_x in range(times):
     ScrollingInfo(lines, speed=0.1, leadin=0, leadout=0)
 
 
@@ -49,7 +59,7 @@ def MovingText2(text, color):
     text: text to scroll
     color: color of the text ('R', 'G', 'O')
   """
-  ser.write('\r') # Reset
+  ser.write('\r')  # Reset
   lines = text2pixels.Get8PixelsHigh(text, color)
   assert len(lines) == 8
   for line in lines:
@@ -60,7 +70,7 @@ def MovingText2(text, color):
 def OneColor(color):
   """Fill the LED with one color."""
   ser.write('\r')
-  for row in range(8):
+  for unused_row in range(8):
     ser.write(color * 8)
     ser.write('\n')
   ser.flush()
@@ -68,7 +78,7 @@ def OneColor(color):
 
 def SetSpecialImage(image):
   """Set the image to one of the 'special' images."""
-  ser.write('\r') # Reset
+  ser.write('\r')  # Reset
   for row in special[image][1]:
     ser.write(row)
     ser.write('\n')
@@ -76,6 +86,7 @@ def SetSpecialImage(image):
 
 
 def MovingLines():
+  """Moving lines animation."""
   for i in range(1000):
     lines = []
     for line in range(8):
@@ -91,35 +102,35 @@ def MovingLines():
 
 
 def WarmUp():
+  """Show something at startup."""
   for color in ['G', 'R', 'O', ' ']:
     OneColor(color)
     time.sleep(0.2)
 
 
 if __name__ == '__main__':
-  import optparse
   desc = ('For text you can pass some words to show.  '
-    'If it\'s one of the following, however it will show something '
-    'special:\n%s') % '\n'.join(['  %r: %s' % (k, v[0]) for k, v, in special.items()])
+          'If it\'s one of the following, however it will show something '
+          'special:\n%s') % '\n'.join(['  %r: %s' % (
+              k, v[0]) for k, v, in special.items()])
 
   parse = optparse.OptionParser('%prog [options] text\n' + desc)
   parse.add_option('-g', '--green', dest='green', action='store_true',
-      help='Show text in green')
+                   help='Show text in green')
   parse.add_option('-r', '--red', dest='red', action='store_true',
-      help='Show text in red')
+                   help='Show text in red')
   parse.add_option('-o', '--orange', dest='orange', action='store_true',
-      help='Show text in orange')
+                   help='Show text in orange')
   parse.add_option('-t', '--times', dest='times', type='int',
-      help='Number of times to scroll text', default=100)
+                   help='Number of times to scroll text', default=100)
 
   options, args = parse.parse_args()
 
   app = text2pixels.Init()
-  ser = serial.Serial('/dev/ttyUSB0', 9600) #115200)
+  ser = serial.Serial('/dev/ttyUSB0', 9600)  #115200)
   WarmUp()
   if not args:
     print 'Pass in a string'
-    import sys
     sys.exit(-1)
   if args[0] in special:
     SetSpecialImage(args[0])
@@ -129,6 +140,10 @@ if __name__ == '__main__':
       ch = 'R'
     elif options.orange:
       ch = 'O'
+    uargs = []
+    for arg in args:
+      exec 'arg = u\'%s\'' % arg
+      uargs.append(arg)
     print ' '.join(args)
-    MovingText2(' '.join(args), ch)
+    MovingText2(u' '.join(uargs), ch)
   ser.close()

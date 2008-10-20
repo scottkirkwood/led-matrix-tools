@@ -75,7 +75,7 @@ void setup() {
   pinMode(MOSI, OUTPUT);
   pinMode(DO, INPUT);
   reset();
-  startupSequence();
+  // startupSequence();
 }
 
 void startupSequence() {
