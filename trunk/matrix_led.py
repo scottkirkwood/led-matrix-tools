@@ -107,6 +107,11 @@ def WarmUp():
     OneColor(color)
     time.sleep(0.2)
 
+def DoKingWen():
+  for hex in range(64):
+    name = 'hex%d' % (hex+1)
+    SetSpecialImage(name)
+    time.sleep(1)
 
 if __name__ == '__main__':
   desc = ('For text you can pass some words to show.  '
@@ -123,12 +128,17 @@ if __name__ == '__main__':
                    help='Show text in orange')
   parse.add_option('-t', '--times', dest='times', type='int',
                    help='Number of times to scroll text', default=100)
+  parse.add_option('-k', '--kingwen', dest='kingwen', action='store_true',
+                   help='Do the King Wen sequence.')
 
   options, args = parse.parse_args()
 
   app = text2pixels.Init()
   ser = serial.Serial('/dev/ttyUSB0', 9600)  #115200)
   WarmUp()
+  if options.kingwen:
+    DoKingWen()
+    sys.exit(0)
   if not args:
     print 'Pass in a string'
     sys.exit(-1)
