@@ -43,7 +43,8 @@ def Get8PixelsHigh(text, color):
 
 if __name__ == "__main__":
   import optparse
-  parse = optparse.OptionParser('%prog [options] Text')
+  parse = optparse.OptionParser(('%prog [options] Text\n'
+      ' Text can have \\u1234 style unicode escapes as well.'))
   parse.add_option('-s', '--size', dest='fsize', type='int',
       help='Font size to use in pixels', default=8)
   parse.add_option('-b', '--bold', dest='bold', action='store_true',
