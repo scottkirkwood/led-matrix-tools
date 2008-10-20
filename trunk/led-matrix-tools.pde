@@ -8,9 +8,10 @@ Originally by by Sebastian Tomczak, 20 July 2007
 Adelaide, Australia
 */
 
-const int CS1 = 2; // Chip select
 const int CLK = 3; // set clock pin
-const int MOSI = 4; // set master out, slave in
+const int MOSI = 4; // set master out, slave in (aka DI)
+const int DO = 5;
+const int CS1 = 6; // Chip select
 const byte OFF = B00; // command byte LED off
 const byte RED = B01; // command byte LED red on
 const byte GRE = B10; // command byte LED green on
@@ -19,7 +20,7 @@ int store_x = 0; // Current x pos when storing
 int store_y = 0; // Current y pos when storing
 int max_width = 8; // Width of image.
 
-const int WIDTH = 100; // This seems to be about the maximum
+const int WIDTH = 80; // This seems to be about the maximum
 const int HEIGHT = 8;
 byte message[HEIGHT * WIDTH];
 int scroll_x = 0;
@@ -29,7 +30,7 @@ void writeMessage(int pin, int offset_x, byte message[]) {
   start(pin);
   for (int y = 0; y < 8; y++) {
     for (int x = 0; x < 8; x++) {
-      byte b = getXY(x, y);
+      byte b = getXY(x + offset_x, y);
       spi_transfer(b);
     }
   }
@@ -67,10 +68,12 @@ void spi_transfer(byte working) {
 }
 
 void setup() {
+  //Serial.begin(115200);
   Serial.begin(9600);
   pinMode(CS1, OUTPUT);
   pinMode(CLK, OUTPUT);
   pinMode(MOSI, OUTPUT);
+  pinMode(DO, INPUT);
   reset();
   startupSequence();
 }
@@ -90,7 +93,7 @@ void startupSequence() {
 void reset() {
   Serial.print("Reset\n");
   digitalWrite(CS1, HIGH); // High means ignore input
-  max_width = 0;
+  max_width = 8;
   store_x = 0;
   store_y = 0;
   fillImage(OFF);
@@ -160,7 +163,7 @@ void loop() {
         }
         store_x = 0;
         store_y++;
-        if (store_y == HEIGHT) {
+        if (store_y >= HEIGHT) {
           startScroll();
         }
         return;
