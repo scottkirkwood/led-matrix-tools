@@ -110,6 +110,17 @@ special = {
         '    R   ',
         '        ',
     ]),
+    'right': ('Right triangle \u25B6', [
+        'G       ',
+        'GG      ',
+        'GGGG    ',
+        'GGGGGG  ',
+        'GGGGGGGG',
+        'GGGGGG  ',
+        'GGGG    ',
+        'GG      ',
+        'G       ',
+    ]),
     'red': ('Solid red', [
         'RRRRRRRR',
         'RRRRRRRR',
