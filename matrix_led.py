@@ -114,10 +114,12 @@ def DoKingWen():
     time.sleep(1)
 
 if __name__ == '__main__':
+  help_info = [x for x in sorted(special.keys()) if not x.startswith('hex')]
+  lines = ['  %r: %s' % (k, special[k][0]) for k in help_info]
+  lines.append('  \'hexN\': Show the Kin Wen hexagram numbered N (1-64)')
   desc = ('For text you can pass some words to show.  '
           'If it\'s one of the following, however it will show something '
-          'special:\n%s') % '\n'.join(['  %r: %s' % (
-              k, v[0]) for k, v, in special.items()])
+          'special:\n%s') % '\n'.join(lines)
 
   parse = optparse.OptionParser('%prog [options] text\n' + desc)
   parse.add_option('-g', '--green', dest='green', action='store_true',
