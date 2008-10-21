@@ -29,7 +29,7 @@ boolean in_scroll = false;
 void writeMessage(int pin, int offset_x, byte message[]) {
   start(pin);
   for (int y = 0; y < 8; y++) {
-    for (int x = 0; x < 8; x++) {
+    for (int x = 0; x < 8; x++) {      
       byte b = getXY(x + offset_x, y);
       spi_transfer(b);
     }
@@ -106,7 +106,11 @@ void fillImage(byte color) {
 }
 
 void startScroll() {
-  scroll_x = 0;
+  if (max_width > 8) {
+    scroll_x = -8;
+  } else {
+    scroll_x = 0;
+  }
   store_x = 0;
   store_y = 0;
   in_scroll = true;
@@ -120,9 +124,9 @@ void maybeDoScroll() {
   writeMessage(CS1, scroll_x, message);
   scroll_x++;
   if (scroll_x >= max_width) {
-    scroll_x = 0;
+    scroll_x = -8;
   }
-  delay(50);
+  delay(100);
 }
 
 void storeXY(int x, int y, byte ch) {
@@ -136,7 +140,7 @@ void storeXY(int x, int y, byte ch) {
 }
 
 byte getXY(int x, int y) {
-  if (x >= max_width || y >= HEIGHT) {
+  if (x >= max_width || y >= HEIGHT || x < 0 || y < 0) {
     return OFF;
   }
   return message[y * WIDTH + x];
