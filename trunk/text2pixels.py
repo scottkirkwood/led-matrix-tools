@@ -46,7 +46,14 @@ def Trim(lines, white):
 
 
 def FitSize(width, height, lines, white):
-  """Make it fit a certain size."""
+  """Make it fit a certain size.
+
+  Args:
+    width: Size, if <= 0 then it's not set to the width
+    height: height, we always trim to this height
+    lines: lines to fix [[], []]
+    white: What is the white character, ex. ' '
+  """
   if len(lines) > height:
     lines = lines[:height]
   elif len(lines) < height:
@@ -57,6 +64,9 @@ def FitSize(width, height, lines, white):
       lines.insert(0, white * width)
     for unused_i in range(bottom):
       lines.append(white * width)
+
+  if width <= 0:
+    return lines
   ret = []
   for line in lines:
     curw = len(line)
@@ -103,11 +113,14 @@ def GetFontPixels(font, text, black, white):
   return Trim(ret, white)
 
 
-def Get8PixelsHigh(text, color):
+def Get8PixelsHigh(text, color, fit_width=False):
   """Useful for my 8x8 pixel LED matrix from sparkfun."""
   font = wx.Font(8, wx.SWISS, style=wx.NORMAL, weight=wx.BOLD)
   white = ' '
-  lines = FitSize(8, 8, GetFontPixels(font, text, color, white), white)
+  width = -1
+  if fit_width:
+    width = 8
+  lines = FitSize(width, 8, GetFontPixels(font, text, color, white), white)
   return lines
 
 
