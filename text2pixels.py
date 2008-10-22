@@ -215,7 +215,7 @@ if __name__ == '__main__':
     style = wx.ITALIC
   if options.font:
     afont = wx.FontFromPixelSize(size, wx.SWISS, style=style, weight=weight,
-                                 name=options.font)
+                                 face=options.font)
   else:
     afont = wx.FontFromPixelSize(size, wx.SWISS, style=style, weight=weight)
 
