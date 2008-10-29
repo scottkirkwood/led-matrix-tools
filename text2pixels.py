@@ -181,6 +181,44 @@ def DoKingWen():
     print '%s]),' % Indent(2)
 
 
+def printNormally(lines):
+  for i, line in enumerate(lines):
+    if options.grid:
+      sys.stdout.write('%02d: ' % (i + 1))
+    if options.python:
+      sys.stdout.write('%s\'' % (Indent(4)))
+    sys.stdout.write(''.join(line))
+    if options.python:
+      sys.stdout.write('\',')
+    # Print a blank between lines, but not on last line
+    if i + 1 != len(lines):
+      sys.stdout.write('\n')
+
+
+def printBinary(lines, original, blank=' '):
+  # Rotate
+  rotated = []
+  for i, ch in enumerate(lines[0]):
+    rotated.append([])
+  for line in lines:
+    for i, ch in enumerate(line):
+      rotated[i].append(ch)
+  
+  print '  // Prints out the message "%s"' % original
+  print '  // %d bits per line, %d lines long' % (len(rotated[0]), len(rotated))
+  print '  const byte image[] PROGMEM = {'
+  for bits in rotated:
+    line = ['    B']
+    for bit in bits:
+      if bit == blank:
+        line.append('0')
+      else:
+        line.append('1')
+    line.append(',')
+    print ''.join(line)
+  print '  };'
+
+
 if __name__ == '__main__':
   parse = optparse.OptionParser(
       ('%prog [options] Text\n'
@@ -202,6 +240,8 @@ if __name__ == '__main__':
                    help='Output as lines of python')
   parse.add_option('-m', '--matrix', dest='matrix', action='store_true',
                    help='Emulate the 8x8 matrix')
+  parse.add_option('--binary', dest='binary', action='store_true',
+                   help='Output as list of binary numbers, one per line.')
   parse.add_option('--kingwen', dest='kingwen', action='store_true',
                    default=False, help='Output King Wen sequence')
   options, args = parse.parse_args()
@@ -234,15 +274,8 @@ if __name__ == '__main__':
       for col in range(len(lines[0])):
         line += '%d' % ((col + 1) % 10)
       print line
-
-    for i, line in enumerate(lines):
-      if options.grid:
-        sys.stdout.write('%02d: ' % (i + 1))
-      if options.python:
-        sys.stdout.write('%s\'' % (Indent(4)))
-      sys.stdout.write(''.join(line))
-      if options.python:
-        sys.stdout.write('\',')
-      # Print a blank between lines, but not on last line
-      if i + 1 != len(lines):
-        sys.stdout.write('\n')
+    
+    if options.binary:
+      printBinary(lines, arg)
+    else:
+      printNormally(lines)
