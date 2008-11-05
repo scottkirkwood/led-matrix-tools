@@ -11,9 +11,10 @@ import sys
 import time
 import serial
 import text2pixels
-
+import os
 special = {}
-execfile('special.py')
+
+execfile(os.path.join(os.path.dirname(sys.argv[0]), 'special.py'))
 
 
 def ScrollingInfo(lines, speed=0.1, leadin=0, leadout=0):
