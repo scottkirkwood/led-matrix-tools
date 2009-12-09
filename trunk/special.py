@@ -782,3 +782,11 @@ special = {
         '        ',
     ]),
 }
+
+if __name__ == '__main__':
+  import sys
+  title, rows = special[sys.argv[1]]
+  #print title
+  for row in rows:
+    print row
+
